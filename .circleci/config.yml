@@ -14,7 +14,8 @@ workflows:
 
 jobs:
   build:
-    machine: true
+    machine:
+      image: ubuntu-2404:current
     steps:
       - checkout
 
@@ -50,18 +51,30 @@ jobs:
           name: Prepare artifacts
           command: |
             mkdir -p output
-            cp rootfs* output/
+            mv rootfs* output/
+
+      - run:
+          name: Deploy
+          command: |
+            if [ -n "${CIRCLE_TAG}" ]; then
+              go install github.com/tcnksm/ghr@latest
+              MAJOR="${CIRCLE_TAG%%.*}"
+              MINOR="${CIRCLE_TAG%.*}"
+              PRE=""
+              if [[ $CIRCLE_TAG = *"rc"* ]]; then
+                PRE="-prerelease"
+              fi
+              # Publish versioned release
+              ~/go/bin/ghr ${PRE} -replace -u "${GITHUB_USER}" "${CIRCLE_TAG}" output/
+              # Update floating tags (major.minor, major, latest, stable)
+              # skip for pre-releases
+              if [ -z "${PRE}" ]; then
+                ~/go/bin/ghr -replace -u "${GITHUB_USER}" "${MINOR}" output/
+                ~/go/bin/ghr -replace -u "${GITHUB_USER}" "${MAJOR}" output/
+                ~/go/bin/ghr -replace -u "${GITHUB_USER}" latest output/
+                ~/go/bin/ghr -replace -u "${GITHUB_USER}" stable output/
+              fi
+            fi
 
       - store_artifacts:
           path: /home/circleci/project/output
-
-      - deploy:
-          name: Deploy
-          command: |
-            if [ "$CIRCLE_TAG" != "" ]; then
-              go install github.com/tcnksm/ghr@latest
-              if [[ $CIRCLE_TAG = *"rc"* ]]; then
-                pre=-prerelease
-              fi
-              ghr $pre -u $GITHUB_USER $CIRCLE_TAG output/
-            fi
