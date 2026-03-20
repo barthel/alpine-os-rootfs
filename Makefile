@@ -33,7 +33,7 @@ amd64: build
 shell: build
 	docker run --rm -ti $(DEFAULT_OPTS) \
 	  -v $(shell pwd):/workspace \
-	  --privileged alpine-rootfs-builder bash
+	  --privileged alpine-rootfs-builder sh
 
 test: build
 	docker run --rm -ti \
@@ -45,7 +45,7 @@ test: build
 
 shellcheck: build
 	docker run --rm -v $(shell pwd):/workspace alpine-rootfs-builder \
-	  bash -c 'shellcheck builder/*.sh'
+	  sh -c 'shellcheck builder/*.sh'
 
 tag:
 	git tag $(TAG)
