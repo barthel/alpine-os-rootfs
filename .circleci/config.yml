@@ -27,24 +27,14 @@ jobs:
       - run:
           name: Run Shellcheck
           command: |
-            make shellcheck
+            docker build -t alpine-rootfs-builder .
+            docker run --rm -v $(pwd):/workspace alpine-rootfs-builder \
+              sh -c 'shellcheck builder/*.sh'
 
       - run:
-          name: Create Alpine ARM 32bit (armhf)
+          name: Build rootfs tarballs
           command: |
-            ALPINE_VERSION="${CIRCLE_TAG:-3.21.0}" ALPINE_OS_VERSION="${CIRCLE_TAG:-latest}" make armhf
-          no_output_timeout: 1800
-
-      - run:
-          name: Create Alpine ARM 64bit (aarch64)
-          command: |
-            ALPINE_VERSION="${CIRCLE_TAG:-3.21.0}" ALPINE_OS_VERSION="${CIRCLE_TAG:-latest}" make arm64
-          no_output_timeout: 1800
-
-      - run:
-          name: Create Alpine x86_64 (amd64)
-          command: |
-            ALPINE_VERSION="${CIRCLE_TAG:-3.21.0}" ALPINE_OS_VERSION="${CIRCLE_TAG:-latest}" make amd64
+            VERSION="${CIRCLE_TAG}" ./build.sh
           no_output_timeout: 1800
 
       - run:

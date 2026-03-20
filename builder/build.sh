@@ -79,12 +79,13 @@ echo "nameserver 1.1.1.1" > "${ROOTFS_DIR}/etc/resolv.conf"
 
 # Package rootfs tarball
 umask 0000
-pushd /workspace
 ARCHIVE_NAME="rootfs-${ALPINE_ARCH}-${ALPINE_OS_VERSION}.tar.gz"
-tar --exclude=dev --exclude=sys --exclude=proc \
-    -czf "${ARCHIVE_NAME}" -C "${ROOTFS_DIR}/" .
-sha256sum "${ARCHIVE_NAME}" > "${ARCHIVE_NAME}.sha256"
-popd
+(
+  cd /workspace
+  tar --exclude=dev --exclude=sys --exclude=proc \
+      -czf "${ARCHIVE_NAME}" -C "${ROOTFS_DIR}/" .
+  sha256sum "${ARCHIVE_NAME}" > "${ARCHIVE_NAME}.sha256"
+)
 
 # Run tests
 ALPINE_HOSTNAME="${ALPINE_HOSTNAME}" ALPINE_ARCH="${ALPINE_ARCH}" /builder/test.sh
