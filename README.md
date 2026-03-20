@@ -35,10 +35,13 @@ Tests run automatically at the end of each build.
 
 ### Versioning
 
+Versions follow the Alpine version: `MAJOR.MINOR.BUILD`.
+`BUILD` starts at 0 and increments with each change while on the same Alpine minor.
+
 Pass `ALPINE_OS_VERSION` to tag the output:
 
 ```bash
-ALPINE_OS_VERSION=0.1.0 make armhf
+ALPINE_OS_VERSION=3.21.0 make armhf
 ```
 
 Default: `dirty`.
@@ -69,7 +72,7 @@ Default: `alpine-black-pearl`.
 make shellcheck   # Run shellcheck against builder/*.sh
 make test         # Run serverspec tests against a previously built rootfs
 make shell        # Open a shell inside the builder container
-make tag TAG=0.1.0  # Create and push a git tag
+make tag TAG=3.21.0  # Create and push a git tag
 ```
 
 ## Included packages
