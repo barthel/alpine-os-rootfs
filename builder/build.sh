@@ -28,10 +28,20 @@ wget -q "${MINIROOTFS_URL}" -O "/tmp/${MINIROOTFS_FILE}"
 tar -xzf "/tmp/${MINIROOTFS_FILE}" -C "${ROOTFS_DIR}/"
 rm -f "/tmp/${MINIROOTFS_FILE}"
 
-# For cross-arch builds: register QEMU binfmt and copy static binary into rootfs
+# For cross-arch builds: register QEMU binfmt with the F (fix binary) flag.
+# The kernel opens the interpreter once at registration time and keeps it open,
+# so the binary does not need to exist inside the chroot.
 if [ -n "${QEMU_ARCH:-}" ]; then
-  update-binfmts --enable "qemu-${QEMU_ARCH}" || true
-  cp "/usr/bin/qemu-${QEMU_ARCH}-static" "${ROOTFS_DIR}/usr/bin/" 2>/dev/null || true
+  case "${QEMU_ARCH}" in
+    arm)
+      echo ':qemu-arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-arm:F' \
+        > /proc/sys/fs/binfmt_misc/register 2>/dev/null || true
+      ;;
+    aarch64)
+      echo ':qemu-aarch64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xb7\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-aarch64:F' \
+        > /proc/sys/fs/binfmt_misc/register 2>/dev/null || true
+      ;;
+  esac
 fi
 
 # Ensure DNS resolves inside chroot
@@ -62,8 +72,7 @@ umount -lqn "${ROOTFS_DIR}/dev"     || true
 umount -lqn "${ROOTFS_DIR}/proc"    || true
 umount -lqn "${ROOTFS_DIR}/sys"     || true
 
-# Remove the QEMU binary — it belongs to the host, not the target rootfs
-rm -f "${ROOTFS_DIR}"/usr/bin/qemu-*-static
+# Nothing to remove: the F-flag binfmt approach does not copy any binary into the rootfs.
 
 # Restore a minimal resolv.conf (live system gets DNS from DHCP)
 echo "nameserver 1.1.1.1" > "${ROOTFS_DIR}/etc/resolv.conf"
