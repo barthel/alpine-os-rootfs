@@ -32,6 +32,11 @@ jobs:
               sh -c 'shellcheck builder/*.sh'
 
       - run:
+          name: Set up QEMU binfmt handlers
+          command: |
+            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+      - run:
           name: Build rootfs tarballs
           command: |
             VERSION="${CIRCLE_TAG}" ./build.sh
