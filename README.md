@@ -30,7 +30,8 @@ make armhf
 make all
 ```
 
-Output is written to the current directory as `rootfs-{arch}-{version}.tar.gz`.
+Output is written to the current directory as `rootfs-{arch}-{version}.tar.gz` + `.sha256`.
+Tests run automatically at the end of each build.
 
 ### Versioning
 
@@ -51,6 +52,25 @@ ALPINE_VERSION=3.21.0 make armhf
 ```
 
 Default: `3.21.0`.
+
+### Hostname
+
+Override the default hostname baked into the rootfs:
+
+```bash
+ALPINE_HOSTNAME=my-pi make armhf
+```
+
+Default: `alpine-black-pearl`.
+
+## Other targets
+
+```bash
+make shellcheck   # Run shellcheck against builder/*.sh
+make test         # Run serverspec tests against a previously built rootfs
+make shell        # Open a shell inside the builder container
+make tag TAG=0.1.0  # Create and push a git tag
+```
 
 ## Included packages
 
@@ -75,6 +95,14 @@ The rootfs includes:
 | Default shell | bash | ash (busybox) |
 | Bash | pre-installed | installed by rootfs build |
 | Base size | ~300 MB | ~30 MB |
+
+## CI / Release
+
+CircleCI builds all three architectures on every push and every tag.
+On a tag push, the built tarballs are published as a GitHub Release.
+
+The pipeline uses contexts `github` (for `GITHUB_USER`) and `Docker Hub`
+(for `DOCKER_USER` / `DOCKER_PASS`).
 
 ## Repository structure
 
