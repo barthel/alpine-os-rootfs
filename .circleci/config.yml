@@ -1,0 +1,67 @@
+version: 2.1
+
+workflows:
+  version: 2.1
+  build_and_deploy:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+          context:
+            - "github"
+            - "Docker Hub"
+
+jobs:
+  build:
+    machine: true
+    steps:
+      - checkout
+
+      - run:
+          name: Run Docker login
+          command: |
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+
+      - run:
+          name: Run Shellcheck
+          command: |
+            make shellcheck
+
+      - run:
+          name: Create Alpine ARM 32bit (armhf)
+          command: |
+            ALPINE_OS_VERSION=${CIRCLE_TAG} make armhf
+          no_output_timeout: 1800
+
+      - run:
+          name: Create Alpine ARM 64bit (aarch64)
+          command: |
+            ALPINE_OS_VERSION=${CIRCLE_TAG} make arm64
+          no_output_timeout: 1800
+
+      - run:
+          name: Create Alpine x86_64 (amd64)
+          command: |
+            ALPINE_OS_VERSION=${CIRCLE_TAG} make amd64
+          no_output_timeout: 1800
+
+      - run:
+          name: Prepare artifacts
+          command: |
+            mkdir -p output
+            cp rootfs* output/
+
+      - store_artifacts:
+          path: /home/circleci/project/output
+
+      - deploy:
+          name: Deploy
+          command: |
+            if [ "$CIRCLE_TAG" != "" ]; then
+              go install github.com/tcnksm/ghr@latest
+              if [[ $CIRCLE_TAG = *"rc"* ]]; then
+                pre=-prerelease
+              fi
+              ghr $pre -u $GITHUB_USER $CIRCLE_TAG output/
+            fi
