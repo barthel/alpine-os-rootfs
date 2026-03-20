@@ -73,6 +73,7 @@ FROM scratch
 COPY rootfs-armhf.tar.gz    /rootfs/
 COPY rootfs-aarch64.tar.gz  /rootfs/
 COPY rootfs-x86_64.tar.gz   /rootfs/
+CMD ["/noop"]
 EOF
 
   docker build --tag "${DIST_IMAGE}:${ALPINE_OS_VERSION}" .dist-ctx/
