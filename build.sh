@@ -24,7 +24,7 @@ if [ -n "${VERSION}" ]; then
   ALPINE_VERSION="${VERSION}"
   ALPINE_OS_VERSION="${VERSION}"
 else
-  BASE_TAG="stable"
+  BASE_TAG="latest"
   ALPINE_VERSION="3.21.0"
   ALPINE_OS_VERSION="latest"
 fi
