@@ -1,9 +1,9 @@
 #!/bin/bash
 set -ex
 
-# This script must run inside the Docker builder container only.
-if [ ! -f /.dockerenv ]; then
-  echo "ERROR: script works in Docker only!"
+# This script must run inside a container only.
+if [ ! -f /.dockerenv ] && [ ! -f /.containerenv ] && [ ! -f /run/.containerenv ]; then
+  echo "ERROR: script works in Docker/Podman only!"
   exit 1
 fi
 

@@ -14,6 +14,7 @@ apk update
 
 # Install base packages
 apk add --no-cache \
+  openrc \
   bash \
   bash-completion \
   ca-certificates \
