@@ -32,19 +32,19 @@ jobs:
       - run:
           name: Create Alpine ARM 32bit (armhf)
           command: |
-            ALPINE_OS_VERSION=${CIRCLE_TAG} make armhf
+            ALPINE_VERSION="${CIRCLE_TAG:-3.21.0}" ALPINE_OS_VERSION="${CIRCLE_TAG:-latest}" make armhf
           no_output_timeout: 1800
 
       - run:
           name: Create Alpine ARM 64bit (aarch64)
           command: |
-            ALPINE_OS_VERSION=${CIRCLE_TAG} make arm64
+            ALPINE_VERSION="${CIRCLE_TAG:-3.21.0}" ALPINE_OS_VERSION="${CIRCLE_TAG:-latest}" make arm64
           no_output_timeout: 1800
 
       - run:
           name: Create Alpine x86_64 (amd64)
           command: |
-            ALPINE_OS_VERSION=${CIRCLE_TAG} make amd64
+            ALPINE_VERSION="${CIRCLE_TAG:-3.21.0}" ALPINE_OS_VERSION="${CIRCLE_TAG:-latest}" make amd64
           no_output_timeout: 1800
 
       - run:
@@ -61,18 +61,18 @@ jobs:
               MAJOR="${CIRCLE_TAG%%.*}"
               MINOR="${CIRCLE_TAG%.*}"
               PRE=""
-              if [[ $CIRCLE_TAG = *"rc"* ]]; then
+              if [[ ${CIRCLE_TAG} = *"rc"* ]]; then
                 PRE="-prerelease"
               fi
               # Publish versioned release
-              ~/go/bin/ghr ${PRE} -replace -u "${GITHUB_USER}" "${CIRCLE_TAG}" output/
+              ghr ${PRE} -replace -u "${GITHUB_USER}" "${CIRCLE_TAG}" output/
               # Update floating tags (major.minor, major, latest, stable)
               # skip for pre-releases
               if [ -z "${PRE}" ]; then
-                ~/go/bin/ghr -replace -u "${GITHUB_USER}" "${MINOR}" output/
-                ~/go/bin/ghr -replace -u "${GITHUB_USER}" "${MAJOR}" output/
-                ~/go/bin/ghr -replace -u "${GITHUB_USER}" latest output/
-                ~/go/bin/ghr -replace -u "${GITHUB_USER}" stable output/
+                ghr -replace -u "${GITHUB_USER}" "${MINOR}" output/
+                ghr -replace -u "${GITHUB_USER}" "${MAJOR}" output/
+                ghr -replace -u "${GITHUB_USER}" latest output/
+                ghr -replace -u "${GITHUB_USER}" stable output/
               fi
             fi
 
